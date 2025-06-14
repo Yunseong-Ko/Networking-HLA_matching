@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧬 HLA 매칭 시스템 - 2025 자선행사</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .card h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .file-upload {
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .file-upload:hover {
+            background: #f8f9ff;
+        }
+
+        .file-upload.dragover {
+            background: #f0f4ff;
+            border-color: #4f46e5;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 25px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.3s, box-shadow 0.3s;
+            width: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-reset {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            margin-top: 10px;
+        }
+
+        .btn-reset:hover {
+            box-shadow: 0 10px 20px rgba(250, 112, 154, 0.3);
+        }
+
+        .results-section {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-top: 30px;
+        }
+
+        .results-section h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .match-result {
+            padding: 20px;
+            border-radius: 15px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .match-success {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+        }
+
+        .match-fail {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            color: white;
+        }
+
+        .participants-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .participants-table th,
+        .participants-table td {
+            padding: 8px;
+            text-align: left;
+            border-bottom: 1px solid #e1e5e9;
+        }
+
+        .participants-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        .participants-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 2em;
+            margin-bottom: 5px;
+        }
+
+        .hla-display {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            padding: 15px;
+            border-radius: 15px;
+            margin: 15px 0;
+            color: white;
+            text-align: center;
+        }
+
+        .hla-values {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .hla-item {
+            background: rgba(255,255,255,0.2);
+            padding: 8px;
+            border-radius: 8px;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            text-align: center;
+            font-weight: 600;
+        }
+
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 30px;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+            flex: 1;
+        }
+
+        .btn-cancel {
+            background: #6c757d;
+            flex: 1;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .hla-values {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧬 HLA 매칭 시스템</h1>
+            <p>2025 자선행사 - 온기X암사 부스</p>
+        </div>
+
+        <div class="main-content">
+            <!-- 데이터베이스 업로드 -->
+            <div class="card">
+                <h2>📊 참가자 데이터베이스 업로드</h2>
+                <div class="form-group">
+                    <label>엑셀 파일 업로드 (이름, 학교, 학번, HLA-A, HLA-B, HLA-C)</label>
+                    <div class="file-upload" id="fileUpload">
+                        <p>📎 엑셀 파일을 여기에 드래그하거나 클릭하여 선택하세요</p>
+                        <input type="file" id="excelFile" accept=".xlsx,.xls" style="display: none;">
+                    </div>
+                </div>
+                <div id="uploadStatus"></div>
+                <button id="resetBtn" class="btn btn-reset">🔄 모든 데이터 초기화</button>
+            </div>
+
+            <!-- 매칭 확인 -->
+            <div class="card">
+                <h2>🔍 HLA 매칭 확인</h2>
+                <div class="form-group">
+                    <label for="person1">첫 번째 참가자</label>
+                    <select id="person1">
+                        <option value="">참가자를 선택하세요</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="person2">두 번째 참가자</label>
+                    <select id="person2">
+                        <option value="">참가자를 선택하세요</option>
+                    </select>
+                </div>
+                <button id="checkMatchBtn" class="btn" disabled>매칭 확인하기</button>
+            </div>
+        </div>
+
+        <!-- 매칭 결과 -->
+        <div class="results-section">
+            <h2>🎯 매칭 결과</h2>
+            <div id="matchResults">
+                <p style="text-align: center; color: #666;">매칭 결과가 여기에 표시됩니다.</p>
+            </div>
+        </div>
+
+        <!-- 참가자 목록 -->
+        <div class="results-section">
+            <h2>👥 참가자 목록</h2>
+            <div id="participantsCount" style="margin-bottom: 15px; font-weight: 600; color: #667eea;"></div>
+            <div style="overflow-x: auto;">
+                <table class="participants-table">
+                    <thead>
+                        <tr>
+                            <th>이름</th>
+                            <th>학교</th>
+                            <th>학번</th>
+                            <th>HLA-A</th>
+                            <th>HLA-B</th>
+                            <th>HLA-C</th>
+                        </tr>
+                    </thead>
+                    <tbody id="participantsList">
+                        <tr>
+                            <td colspan="6" style="text-align: center; color: #666;">데이터를 업로드해주세요.</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 통계 -->
+        <div class="results-section">
+            <h2>📊 매칭 통계</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="totalParticipants">0</h3>
+                    <p>총 참가자</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="totalMatches">0</h3>
+                    <p>매칭 시도</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="successMatches">0</h3>
+                    <p>성공한 매칭</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 초기화 확인 모달 -->
+    <div id="resetModal" class="modal">
+        <div class="modal-content">
+            <h3 style="color: #667eea; margin-bottom: 20px;">⚠️ 데이터 초기화</h3>
+            <p style="margin-bottom: 20px; line-height: 1.6;">
+                모든 참가자 데이터와 매칭 기록이 삭제됩니다.<br>
+                이 작업은 되돌릴 수 없습니다.<br><br>
+                정말로 초기화하시겠습니까?
+            </p>
+            <div class="modal-buttons">
+                <button id="confirmResetBtn" class="btn btn-confirm">초기화</button>
+                <button id="cancelResetBtn" class="btn btn-cancel">취소</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let participants = [];
+        let matchHistory = [];
+
+        // 파일 업로드 이벤트
+        document.getElementById('fileUpload').addEventListener('click', () => {
+            document.getElementById('excelFile').click();
+        });
+
+        document.getElementById('excelFile').addEventListener('change', handleFileUpload);
+
+        // 드래그 앤 드롭
+        const fileUpload = document.getElementById('fileUpload');
+        fileUpload.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            fileUpload.classList.add('dragover');
+        });
+
+        fileUpload.addEventListener('dragleave', () => {
+            fileUpload.classList.remove('dragover');
+        });
+
+        fileUpload.addEventListener('drop', (e) => {
+            e.preventDefault();
+            fileUpload.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // 초기화 기능
+        document.getElementById('resetBtn').addEventListener('click', () => {
+            document.getElementById('resetModal').style.display = 'block';
+        });
+
+        document.getElementById('confirmResetBtn').addEventListener('click', () => {
+            resetAllData();
+            document.getElementById('resetModal').style.display = 'none';
+        });
+
+        document.getElementById('cancelResetBtn').addEventListener('click', () => {
+            document.getElementById('resetModal').style.display = 'none';
+        });
+
+        // 모달 외부 클릭 시 닫기
+        window.addEventListener('click', (e) => {
+            const modal = document.getElementById('resetModal');
+            if (e.target === modal) {
+                modal.style.display = 'none';
+            }
+        });
+
+        function resetAllData() {
+            participants = [];
+            matchHistory = [];
+            
+            // UI 초기화
+            document.getElementById('uploadStatus').innerHTML = '';
+            document.getElementById('excelFile').value = '';
+            document.getElementById('person1').value = '';
+            document.getElementById('person2').value = '';
+            document.getElementById('matchResults').innerHTML = '<p style="text-align: center; color: #666;">매칭 결과가 여기에 표시됩니다.</p>';
+            
+            updateUI();
+            showStatus('모든 데이터가 초기화되었습니다.', 'success');
+            
+            // 3초 후 상태 메시지 제거
+            setTimeout(() => {
+                document.getElementById('uploadStatus').innerHTML = '';
+            }, 3000);
+        }
+
+        function handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                handleFile(file);
+            }
+        }
+
+        function handleFile(file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, {type: 'array'});
+                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
+                    const jsonData = XLSX.utils.sheet_to_json(firstSheet);
+                    
+                    processExcelData(jsonData);
+                } catch (error) {
+                    showStatus('파일 처리 중 오류가 발생했습니다: ' + error.message, 'error');
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        function processExcelData(data) {
+            if (data.length === 0) {
+                showStatus('파일에 데이터가 없습니다.', 'error');
+                return;
+            }
+
+            // 컬럼 검증
+            const requiredColumns = ['이름', '학교', '학번', 'HLA-A', 'HLA-B', 'HLA-C'];
+            const firstRow = data[0];
+            const missingColumns = requiredColumns.filter(col => !(col in firstRow));
+            
+            if (missingColumns.length > 0) {
+                showStatus(`필수 컬럼이 누락되었습니다: ${missingColumns.join(', ')}`, 'error');
+                return;
+            }
+
+            // 데이터 변환
+            participants = data.map((row, index) => ({
+                id: index + 1,
+                name: row['이름']?.toString().trim() || '',
+                school: row['학교']?.toString().trim() || '',
+                studentId: row['학번']?.toString().trim() || '',
+                hlaA: row['HLA-A']?.toString().trim() || '',
+                hlaB: row['HLA-B']?.toString().trim() || '',
+                hlaC: row['HLA-C']?.toString().trim() || ''
+            })).filter(p => p.name && p.school && p.studentId);
+
+            if (participants.length === 0) {
+                showStatus('유효한 참가자 데이터가 없습니다.', 'error');
+                return;
+            }
+
+            // 매칭 기록도 초기화 (새로운 데이터 업로드 시)
+            matchHistory = [];
+
+            showStatus(`${participants.length}명의 참가자 데이터가 성공적으로 업로드되었습니다.`, 'success');
+            updateUI();
+        }
+
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('uploadStatus');
+            statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+        }
+
+        function updateUI() {
+            updateParticipantSelects();
+            updateParticipantsList();
+            updateStats();
+            document.getElementById('checkMatchBtn').disabled = participants.length === 0;
+        }
+
+        function updateParticipantSelects() {
+            const select1 = document.getElementById('person1');
+            const select2 = document.getElementById('person2');
+            
+            select1.innerHTML = '<option value="">참가자를 선택하세요</option>';
+            select2.innerHTML = '<option value="">참가자를 선택하세요</option>';
+            
+            participants.forEach(p => {
+                const option1 = document.createElement('option');
+                option1.value = p.id;
+                option1.textContent = `${p.name} (${p.school})`;
+                select1.appendChild(option1);
+                
+                const option2 = document.createElement('option');
+                option2.value = p.id;
+                option2.textContent = `${p.name} (${p.school})`;
+                select2.appendChild(option2);
+            });
+        }
+
+        function updateParticipantsList() {
+            const tbody = document.getElementById('participantsList');
+            const countDiv = document.getElementById('participantsCount');
+            
+            countDiv.textContent = participants.length > 0 ? `총 ${participants.length}명의 참가자` : '';
+            
+            if (participants.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #666;">데이터를 업로드해주세요.</td></tr>';
+                return;
+            }
+            
+            tbody.innerHTML = participants.map(p => `
+                <tr>
+                    <td>${p.name}</td>
+                    <td>${p.school}</td>
+                    <td>${p.studentId}</td>
+                    <td>${p.hlaA}</td>
+                    <td>${p.hlaB}</td>
+                    <td>${p.hlaC}</td>
+                </tr>
+            `).join('');
+        }
+
+        function updateStats() {
+            document.getElementById('totalParticipants').textContent = participants.length;
+            document.getElementById('totalMatches').textContent = matchHistory.length;
+            document.getElementById('successMatches').textContent = matchHistory.filter(m => m.isMatch).length;
+        }
+
+        // 매칭 확인
+        document.getElementById('checkMatchBtn').addEventListener('click', function() {
+            const person1Id = document.getElementById('person1').value;
+            const person2Id = document.getElementById('person2').value;
+            
+            if (!person1Id || !person2Id) {
+                alert('두 명의 참가자를 모두 선택해주세요.');
+                return;
+            }
+            
+            if (person1Id === person2Id) {
+                alert('같은 참가자를 선택했습니다. 다른 참가자를 선택해주세요.');
+                return;
+            }
+            
+            const person1 = participants.find(p => p.id == person1Id);
+            const person2 = participants.find(p => p.id == person2Id);
+            
+            if (!person1 || !person2) {
+                alert('선택한 참가자를 찾을 수 없습니다.');
+                return;
+            }
+            
+            const isMatch = checkHLAMatch(person1, person2);
+            displayMatchResult(person1, person2, isMatch);
+            
+            // 매칭 기록 저장
+            matchHistory.push({
+                id: Date.now(),
+                person1: person1,
+                person2: person2,
+                isMatch: isMatch,
+                timestamp: new Date().toLocaleString('ko-KR')
+            });
+            
+            updateStats();
+        });
+
+        function checkHLAMatch(person1, person2) {
+            return person1.hlaA === person2.hlaA && 
+                   person1.hlaB === person2.hlaB && 
+                   person1.hlaC === person2.hlaC;
+        }
+
+        function displayMatchResult(person1, person2, isMatch) {
+            const resultsDiv = document.getElementById('matchResults');
+            
+            if (isMatch) {
+                resultsDiv.innerHTML = `
+                    <div class="match-result match-success">
+                        🎉 매칭 성공! 🎉<br>
+                        ${person1.name}님과 ${person2.name}님의 HLA가 완전히 일치합니다!<br>
+                        함께 온기X암사 부스로 오세요! 🏃‍♀️🏃‍♂️
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                        <div class="hla-display">
+                            <h4>${person1.name} (${person1.school})</h4>
+                            <div class="hla-values">
+                                <div class="hla-item"><strong>HLA-A:</strong> ${person1.hlaA}</div>
+                                <div class="hla-item"><strong>HLA-B:</strong> ${person1.hlaB}</div>
+                                <div class="hla-item"><strong>HLA-C:</strong> ${person1.hlaC}</div>
+                            </div>
+                        </div>
+                        <div class="hla-display">
+                            <h4>${person2.name} (${person2.school})</h4>
+                            <div class="hla-values">
+                                <div class="hla-item"><strong>HLA-A:</strong> ${person2.hlaA}</div>
+                                <div class="hla-item"><strong>HLA-B:</strong> ${person2.hlaB}</div>
+                                <div class="hla-item"><strong>HLA-C:</strong> ${person2.hlaC}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                resultsDiv.innerHTML = `
+                    <div class="match-result match-fail">
+                        😅 아쉽게도 매칭되지 않았습니다<br>
+                        ${person1.name}님과 ${person2.name}님의 HLA가 일치하지 않아요<br>
+                        다른 참가자와 시도해보세요! 💪
+                    </div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                            <h4>${person1.name} (${person1.school})</h4>
+                            <p><strong>HLA-A:</strong> ${person1.hlaA}</p>
+                            <p><strong>HLA-B:</strong> ${person1.hlaB}</p>
+                            <p><strong>HLA-C:</strong> ${person1.hlaC}</p>
+                        </div>
+                        <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                            <h4>${person2.name} (${person2.school})</h4>
+                            <p><strong>HLA-A:</strong> ${person2.hlaA}</p>
+                            <p><strong>HLA-B:</strong> ${person2.hlaB}</p>
+                            <p><strong>HLA-C:</strong> ${person2.hlaC}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        // 초기 UI 업데이트
+        updateUI();
+    </script>
+</body>
+</html>
