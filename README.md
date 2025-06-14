@@ -80,7 +80,7 @@ E03: HLA-A(11/30), HLA-B(18/40), HLA-C(06/12)
 ├── hla_system_with_reset.html    # 메인 애플리케이션 파일
 ├── README.md                     # 프로젝트 문서
 └── docs/
-    └── HLA_카드_기획서.docx       # 기획 문서
+    └── HLA_카드_기획서.docx       # 기획 문서 (비공개)
 ```
 
 ## 🚀 실행 방법
